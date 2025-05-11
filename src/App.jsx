@@ -1,41 +1,29 @@
 // src/App.jsx
 import { useEffect, useState } from "react";
+import SlotManager from "./pages/SlotManager";
 import { signInAnonymously, onAuthStateChanged } from "firebase/auth";
 import { auth } from "./firebase";
-import QueueList from "./pages/QueueList";
-import JoinForm from "./pages/JoinForm";
 
-function App() {
-  const [user, setUser] = useState(null); // app user info
-  const [authUser, setAuthUser] = useState(null); // firebase auth user
+const App = () => {
+  const [uid, setUid] = useState(null);
+  const [name, setName] = useState("");
+  const [hasBooking, setHasBooking] = useState(false);
 
   useEffect(() => {
-    const unsub = onAuthStateChanged(auth, (firebaseUser) => {
-      if (firebaseUser) {
-        setAuthUser(firebaseUser);
-      } else {
-        signInAnonymously(auth);
-      }
+    const unsub = onAuthStateChanged(auth, async (user) => {
+      if (user) setUid(user.uid);
     });
+    signInAnonymously(auth);
     return () => unsub();
   }, []);
 
   return (
-    <div className="min-h-screen bg-gray-100 text-center pt-10">
-      <h1 className="text-2xl font-bold mb-4">🔌 ChargeQueue</h1>
-
-      {!authUser ? (
-        <p>Connecting...</p>
-      ) : !user ? (
-        <JoinForm onJoin={setUser} uid={authUser.uid} />
-      ) : (
-        <>
-          <p className="text-lg mb-4">Welcome, {user.name}!</p>
-          <QueueList currentUser={user} />
-        </>
-      )}
+    <div className="p-4 max-w-xl mx-auto">
+      <h1 className="text-2xl font-bold mb-4">🔌 Charging Slot Booking</h1>
+      <SlotManager uid={uid} name={name} setName={setName} setHasBooking={setHasBooking} hasBooking={hasBooking} />
     </div>
   );
-}
+
+};
 
 export default App;
